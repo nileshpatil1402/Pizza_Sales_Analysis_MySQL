@@ -1,12 +1,9 @@
-/* =========================================
-   PIZZA SALES ANALYSIS PROJECT
-   Author: Nilesh Patil
-   Database: MySQL
-========================================= */
 
-/* =========================================
-   BASIC ANALYSIS
-========================================= */
+--    PIZZA SALES ANALYSIS PROJECT
+--    Author: Nilesh Patil
+--    Database: MySQL
+
+----------------BASIC ANALYSIS---------------------------
 
 -- 1. Total number of orders placed
 SELECT COUNT(DISTINCT order_id) AS total_orders
@@ -48,10 +45,7 @@ GROUP BY od.pizza_id
 ORDER BY total_quantity DESC
 LIMIT 5;
 
-
-/* =========================================
-   INTERMEDIATE ANALYSIS
-========================================= */
+  -----------INTERMEDIATE ANALYSIS-----------------
 
 -- 6. Total quantity ordered by pizza category
 SELECT 
@@ -107,10 +101,7 @@ GROUP BY pt.name
 ORDER BY total_revenue DESC
 LIMIT 3;
 
-
-/* =========================================
-   ADVANCED ANALYSIS
-========================================= */
+----------------ADVANCED ANALYSIS-----------------
 
 -- 11. Percentage contribution of each pizza to total revenue
 SELECT

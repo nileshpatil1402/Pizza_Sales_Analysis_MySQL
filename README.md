@@ -1,147 +1,267 @@
-# 🍕 Pizza Sales Analysis Project (MySQL)
+# 🍕 Pizza Sales Analysis   
+### Build Project with SQL & Power BI Business Intelligence 
 
-**SQL Data Analysis Project | Basic • Intermediate • Advanced Queries**
-
-This project analyzes a Pizza Sales dataset using MySQL to extract business insights related to revenue, order trends, product performance, and category contribution.
-
-The project demonstrates SQL proficiency from basic aggregations to advanced window functions.
-
----
-
-## 📂 Database Structure
-
-The project uses 4 relational tables:
-
-1. **order_details**
-2. **orders**
-3. **pizza_types**
-4. **pizzas**
-
-### 🔹 order_details
-- order_details_id (Primary Key)
-- order_id
-- pizza_id
-- quantity
-
-### 🔹 orders
-- order_id (Primary Key)
-- order_date
-- order_time
-
-### 🔹 pizza_types
-- pizza_type_id (Primary Key)
-- name
-- category
-- ingredients
-
-### 🔹 pizzas
-- pizza_id (Primary Key)
-- pizza_type_id
-- size
-- price
+![SQL](https://img.shields.io/badge/SQL-MySQL-blue)
+![Power BI](https://img.shields.io/badge/PowerBI-Dashboard-yellow)
+![Project Type](https://img.shields.io/badge/Project-Data%20Analytics-green)
 
 ---
 
-# 📊 SQL Analysis Breakdown
+## 📌 Executive Overview  
+
+This project delivers an end-to-end sales analytics solution designed to extract actionable business intelligence from transactional pizza sales data.
+
+The objective is to transform raw operational data into strategic insights that support:
+
+- Revenue optimization  
+- Product performance evaluation  
+- Customer demand analysis  
+- Operational efficiency improvement  
+
+The solution integrates **MySQL (data modeling & analytics)** and **Power BI (interactive dashboarding)** to provide executive-level reporting and performance tracking.
 
 ---
 
-## 🟢 Basic Level Queries
+## 🎯 Business Objective  
 
-1️⃣ Total number of orders  
-→ 21,350 total orders  
+To address the strategic question:
 
-2️⃣ Total revenue generated  
-→ $817,860.05  
-
-3️⃣ Highest priced pizza  
-→ The Greek Pizza (XXL) – $35.95  
-
-4️⃣ Most common pizza size  
-→ Large (L)  
-
-5️⃣ Top 5 most ordered pizzas  
-- big_meat_s  
-- thai_ckn_l  
-- five_cheese_l  
-- four_cheese_l  
-- classic_dlx_m  
+> **How can transactional sales data be leveraged to identify revenue drivers, optimize product strategy, and enhance operational performance?**
 
 ---
 
-## 🟡 Intermediate Level Queries
+## 🏗️ Solution Architecture  
 
-6️⃣ Total quantity by pizza category  
-- Classic  
-- Supreme  
-- Chicken  
-- Veggie  
+### 🔹 Data Layer – Relational Database (MySQL)
 
-7️⃣ Orders distribution by hour  
-→ Peak orders between 12 PM – 2 PM  
+A structured relational schema was implemented using a star schema design:
 
-8️⃣ Category-wise pizza distribution  
+**Fact Table**
+- `order_details`
 
-9️⃣ Daily total pizzas ordered & average per order  
+**Dimension Tables**
+- `orders`
+- `pizzas`
+- `pizza_types`
 
----
-
-## 🔴 Advanced Level Queries
-
-🔟 Top 3 pizzas by revenue  
-- The Thai Chicken Pizza  
-- The Barbecue Chicken Pizza  
-- The California Chicken Pizza  
-
-1️⃣1️⃣ Percentage revenue contribution per pizza type  
-
-1️⃣2️⃣ Cumulative revenue over time  
-→ Used SQL Window Function (OVER ORDER BY)
-
-1️⃣3️⃣ Top 3 pizzas by revenue within each category  
+This architecture ensures:
+- Scalable aggregation  
+- Efficient joins  
+- Clean analytical modeling  
 
 ---
 
-## 🛠️ Concepts Used
+### 🔹 Database Schema (SQL)
 
-- SELECT, GROUP BY, ORDER BY  
-- JOIN (INNER JOIN, USING)  
-- Aggregate Functions (SUM, COUNT)  
-- Subqueries  
-- Window Functions (OVER)  
-- Revenue Calculations  
-- Date & Time Functions (HOUR)
+```sql
+CREATE TABLE orders (
+    order_id INT PRIMARY KEY,
+    order_date DATE,
+    order_time TIME
+);
 
----
+CREATE TABLE order_details (
+    order_details_id INT PRIMARY KEY AUTO_INCREMENT,
+    order_id INT,
+    pizza_id VARCHAR(100),
+    quantity INT,
+    FOREIGN KEY (order_id) REFERENCES orders(order_id)
+);
 
-## 📈 Business Insights
+CREATE TABLE pizzas (
+    pizza_id VARCHAR(100) PRIMARY KEY,
+    pizza_type_id VARCHAR(50),
+    size VARCHAR(10),
+    price DECIMAL(6,2)
+);
 
-- Large size pizzas are most preferred  
-- Chicken category generates highest revenue  
-- Lunch hours are peak sales time  
-- A few pizza types contribute major revenue share  
-- Revenue shows steady cumulative growth over time  
-
----
-
-## 🚀 Project Highlights
-
-✔ Real-world business dataset  
-✔ Multi-table joins  
-✔ Revenue analysis  
-✔ Category contribution analysis  
-✔ Time-based trend analysis  
-✔ Advanced SQL techniques  
-
----
-
-## 📎 Project File
-
-Full Project PDF:  
-Pizza Project with MySQL  
+CREATE TABLE pizza_types (
+    pizza_type_id VARCHAR(100) PRIMARY KEY,
+    name VARCHAR(100),
+    category VARCHAR(50),
+    ingredients TEXT
+);
+```
 
 ---
 
-### 👨‍💻 Created By
+## 🔍 SQL Business Analysis  
 
-**Nilesh Patil**
+### Total Orders
+```sql
+SELECT COUNT(DISTINCT order_id) AS total_orders
+FROM orders;
+```
+
+### Total Revenue
+```sql
+SELECT SUM(order_details.quantity * pizzas.price) AS total_revenue
+FROM order_details
+JOIN pizzas ON order_details.pizza_id = pizzas.pizza_id;
+```
+
+### Top 3 Revenue Generating Pizzas
+```sql
+SELECT pizza_types.name,
+SUM(order_details.quantity * pizzas.price) AS total_revenue
+FROM order_details
+JOIN pizzas ON order_details.pizza_id = pizzas.pizza_id
+JOIN pizza_types ON pizzas.pizza_type_id = pizza_types.pizza_type_id
+GROUP BY pizza_types.name
+ORDER BY total_revenue DESC
+LIMIT 3;
+```
+
+### Revenue Contribution Percentage
+```sql
+SELECT
+pizza_types.name AS pizza_type,
+SUM(pizzas.price * order_details.quantity) AS revenue,
+ROUND(
+(SUM(pizzas.price * order_details.quantity) * 100.0) /
+(SELECT SUM(pizzas.price * order_details.quantity)
+ FROM order_details
+ JOIN pizzas ON order_details.pizza_id = pizzas.pizza_id), 2
+) AS percentage_contribution
+FROM order_details
+JOIN pizzas ON order_details.pizza_id = pizzas.pizza_id
+JOIN pizza_types ON pizzas.pizza_type_id = pizza_types.pizza_type_id
+GROUP BY pizza_types.name
+ORDER BY percentage_contribution DESC;
+```
+
+### Cumulative Revenue Over Time
+```sql
+SELECT orders.order_date,
+SUM(pizzas.price * order_details.quantity) AS daily_revenue,
+SUM(SUM(pizzas.price * order_details.quantity))
+OVER (ORDER BY orders.order_date) AS cumulative_revenue
+FROM order_details
+JOIN pizzas ON order_details.pizza_id = pizzas.pizza_id
+JOIN orders ON order_details.order_id = orders.order_id
+GROUP BY orders.order_date
+ORDER BY orders.order_date;
+```
+
+---
+
+## 📊 Power BI Dashboard  
+
+### Key Performance Indicators (KPIs)
+
+- 💰 **Total Revenue:** ₹817.86K  
+- 🧾 **Total Orders:** 21K  
+- 📦 **Total Quantity Sold:** 50K  
+- 📈 **Average Order Value:** ₹38.31  
+
+---
+
+### DAX Measures
+
+```DAX
+Total Revenue =
+SUMX(
+    order_details,
+    order_details[quantity] * RELATED(pizzas[price])
+)
+
+Total Orders =
+DISTINCTCOUNT(orders[order_id])
+
+Total Quantity =
+SUM(order_details[quantity])
+
+Avg Order Value =
+DIVIDE([Total Revenue], [Total Orders])
+```
+
+---
+
+## 📈 Analytical Views
+
+- Revenue Trend by Month  
+- Revenue by Category  
+- Quantity by Size  
+- Top 5 Revenue-Generating Pizzas  
+- Interactive Date, Category & Size Filters  
+
+---
+
+## 🔍 Key Insights  
+
+- Large size pizzas dominate overall sales volume.  
+- Classic and Supreme categories generate the highest revenue share.  
+- Thai Chicken, Barbecue Chicken, and California Chicken pizzas are top revenue contributors.  
+- Peak ordering hours identified using SQL time-based grouping.  
+
+---
+
+## 💡 Strategic Recommendations  
+
+✔ Expand premium variations in high-performing categories  
+✔ Implement targeted promotions for low-performing pizzas  
+✔ Optimize staffing during peak hours  
+✔ Bundle medium & small pizzas to increase order value  
+✔ Apply data-driven pricing strategy for large-size pizzas  
+
+---
+
+## 🧠 Technical Skills Demonstrated  
+
+- Relational Data Modeling (Star Schema)  
+- Advanced SQL (Joins, Aggregations, Window Functions)  
+- Revenue & KPI Analysis  
+- Power BI Dashboard Development  
+- DAX Measure Creation  
+- Business Intelligence Reporting  
+
+---
+
+## 📂 Repository Structure  
+
+```
+Pizza-Sales-Analytics/
+│
+├── sql/
+│   └── pizza_analysis_queries.sql
+│
+├── powerbi/
+│   └── pizza_sales_dashboard.pbix
+│
+├── report/
+│   └── Project_Report.pdf
+│
+└── README.md
+```
+
+---
+
+## 📊 Business Impact  
+
+By transforming raw transactional data into structured intelligence, this project enables:
+
+- Revenue growth optimization  
+- Data-driven product decisions  
+- Improved operational planning  
+- Scalable analytics framework  
+
+---
+
+## 👨‍💻 Author  
+
+**Nilesh Patil**  
+Data Analyst | SQL | Power BI | Business Intelligence  
+
+🔗 LinkedIn: https://linkedin.com/in/nilesh-patil-347810362  
+
+---
+
+## 🚀 Future Enhancements  
+
+- Customer segmentation integration  
+- Predictive sales forecasting (Python / Machine Learning)  
+- Profit margin analysis  
+- Inventory optimization  
+- Cloud deployment (Azure / AWS)  
+
+---
